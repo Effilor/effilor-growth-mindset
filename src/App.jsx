@@ -140,12 +140,12 @@ const App = () => {
     {
       id: 12,
       pillar: 'Thriving on Challenges',
-      text: "When allocating important projects, our decision process:",
+      text: "When assigning important projects, we:",
       options: [
-        { value: 1, label: "Prioritizes safety and minimizes risk by choosing proven performers" },
-        { value: 2, label: "Carefully weighs risks but generally prefers secure choices" },
-        { value: 3, label: "Balances safety with development opportunities for high-potential talent" },
-        { value: 4, label: "Views challenging assignments as key development opportunities worth the risk" }
+        { value: 1, label: "Choose proven performers to minimize risk" },
+        { value: 2, label: "Prefer experienced people but consider risks carefully" },
+        { value: 3, label: "Balance project success with opportunities for high-potential team members" },
+        { value: 4, label: "View stretch assignments as essential for development, even with higher risk" }
       ]
     },
     // Pillar 4: Learning from Failures
@@ -405,8 +405,14 @@ const App = () => {
               Growth Mindset Assessment
             </h2>
             <p className="text-xl text-gray-600 mb-8">
-              Discover how your organization embraces growth across 4 key dimensions
+              Discover how your organization views Potential, values Effort, embraces Challenges, and learns from Failures
             </p>
+
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-6">
+              <p className="text-blue-900 text-lg leading-relaxed">
+                📋 <strong>Please answer all questions from your organization's perspective</strong> - not your personal views. Think about how your organization as a whole operates, not just your team or department.
+              </p>
+            </div>
 
             <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-6 mb-8">
               <p className="text-purple-900 text-lg leading-relaxed">
@@ -462,7 +468,7 @@ const App = () => {
           </div>
 
           <div className="text-center mt-8 text-gray-500 text-sm">
-            <p>© 2024 Effilor Consulting Services. All rights reserved.</p>
+            <p>© 2025 Effilor Consulting Services. All rights reserved.</p>
           </div>
         </div>
       </div>
@@ -500,24 +506,43 @@ const App = () => {
               {question.text}
             </h2>
 
-            <div className="space-y-4">
-              {question.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswer(option.value)}
-                  className="w-full text-left p-6 rounded-xl border-2 border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition-all duration-200"
-                >
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-4 font-bold text-gray-600">
-                      {String.fromCharCode(65 + index)}
+            <div className="space-y-4 mb-6">
+              {question.options.map((option, index) => {
+                const isSelected = answers[currentQuestion] === option.value;
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option.value)}
+                    className={`w-full text-left p-6 rounded-xl border-2 transition-all duration-200 ${
+                      isSelected 
+                        ? 'border-purple-600 bg-purple-50' 
+                        : 'border-gray-200 hover:border-purple-400 hover:bg-purple-50'
+                    }`}
+                  >
+                    <div className="flex items-start">
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mr-4 font-bold ${
+                        isSelected ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {String.fromCharCode(65 + index)}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-gray-800">{option.label}</p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-gray-800">{option.label}</p>
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
+
+            {currentQuestion > 0 && (
+              <button
+                onClick={() => setCurrentQuestion(currentQuestion - 1)}
+                className="w-full py-3 px-6 text-lg font-bold rounded-xl border-2 transition-all"
+                style={{ borderColor: '#6B3D7A', color: '#6B3D7A' }}
+              >
+                ← Previous Question
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -643,7 +668,7 @@ const App = () => {
           </div>
 
           {/* CTA to Email Gate */}
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl shadow-xl p-8 text-center text-white">
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl shadow-xl p-8 text-center text-white mb-8">
             <h3 className="text-3xl font-bold mb-4">Want to Save and Share These Results?</h3>
             <p className="text-xl mb-6">Get your complete analysis as a downloadable PDF report</p>
             <button
@@ -653,6 +678,41 @@ const App = () => {
               <Download className="mr-2" />
               Download Full Report
             </button>
+          </div>
+
+          {/* Additional Engagement Hooks */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-purple-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">🎯 Want a Deeper Dive?</h3>
+              <p className="text-gray-700 mb-4">
+                Get a comprehensive organizational assessment with individual evaluations across your leadership team.
+              </p>
+              <a
+                href="https://effilor.com/contact"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block px-6 py-3 rounded-xl font-bold transition-all"
+                style={{ backgroundColor: '#6B3D7A', color: 'white' }}
+              >
+                Request Team Assessment
+              </a>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-blue-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">💡 Explore More Resources</h3>
+              <p className="text-gray-700 mb-4">
+                Discover our full library of assessments, toolkits, and insights to accelerate your growth.
+              </p>
+              <a
+                href="https://effilor.com/resources"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block px-6 py-3 rounded-xl font-bold border-2 transition-all"
+                style={{ borderColor: '#6B3D7A', color: '#6B3D7A' }}
+              >
+                Browse Resources
+              </a>
+            </div>
           </div>
         </div>
       </div>
