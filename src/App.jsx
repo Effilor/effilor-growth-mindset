@@ -243,20 +243,42 @@ const App = () => {
     return { name: 'Needs Focus', color: 'bg-red-100 text-red-800' };
   };
 
-  const handleEmailSubmit = (e) => {
-    e.preventDefault();
-    console.log('Lead captured:', userData, answers);
-    setCurrentScreen('thankyou');
-    // Trigger PDF download
-    setTimeout(() => generatePDF(), 500);
+ const handleEmailSubmit = async (e) => {
+  e.preventDefault();
+  
+  const assessmentData = {
+    name: userData.name,
+    email: userData.email,
+    company: userData.company,
+    answers: answers,
+    timestamp: new Date().toISOString()
   };
 
-  const generatePDF = () => {
-    const doc = new jsPDF();
-    const results = calculateResults();
-    const topStrength = getTopStrength();
-    const priorityArea = getPriorityArea();
-    
+  console.log('Submitting assessment data:', assessmentData);
+
+  try {
+    const response = await fetch('/api/send-notification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(assessmentData)
+    });
+
+    if (response.ok) {
+      console.log('Assessment data sent successfully');
+      setCurrentScreen('thankyou');
+    } else {
+      const error = await response.json();
+      console.error('Failed to send:', error);
+      alert('There was an issue submitting your assessment. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error submitting assessment:', error);
+    alert('There was an issue submitting your assessment. Please try again.');
+  }
+};
+  
     // Add Effilor branding
     doc.setFontSize(24);
     doc.setTextColor(61, 61, 122); // #3D3D7A
@@ -795,87 +817,86 @@ const App = () => {
   }
 
   // Thank You Screen
-  if (currentScreen === 'thankyou') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
-        <Header />
-        <div className="max-w-3xl mx-auto px-4 py-12 pt-24">
-          <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="w-12 h-12 text-green-500" />
-            </div>
-
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Thank You, {userData.name}!
-            </h2>
-            <p className="text-xl text-gray-600 mb-8">
-              Your Growth Mindset Assessment report has been downloaded.
-            </p>
-
-            <div className="bg-purple-50 rounded-xl p-6 mb-8">
-              <p className="text-gray-700 mb-4">
-                We've sent a copy to <strong>{userData.email}</strong>
-              </p>
-              <p className="text-sm text-gray-600">
-                Check your inbox in the next few minutes. If you don't see it, please check your spam folder.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">What's Next?</h3>
-
-              <a
-                href="https://effilor.com/resources"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full py-4 px-6 text-lg font-bold rounded-xl border-2 transition-all hover:scale-105"
-                style={{ borderColor: '#6B3D7A', color: '#6B3D7A' }}
-              >
-                <div className="flex items-center justify-center">
-                  <span>📚 Explore More Resources</span>
-                  <ExternalLink className="ml-2 w-5 h-5" />
-                </div>
-              </a>
-
-              <a
-                href="https://effilor.com/contact"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full py-4 px-6 text-lg font-bold text-white rounded-xl transition-all hover:opacity-90"
-                style={{ backgroundColor: '#6B3D7A' }}
-              >
-                <div className="flex items-center justify-center">
-                  <span>📅 Schedule a Consultation</span>
-                  <ExternalLink className="ml-2 w-5 h-5" />
-                </div>
-              </a>
-
-              <a
-                href="https://effilor.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full py-4 px-6 text-lg font-bold rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
-              >
-                <div className="flex items-center justify-center">
-                  <span>🏠 Back to Effilor.com</span>
-                  <ExternalLink className="ml-2 w-5 h-5" />
-                </div>
-              </a>
-            </div>
+  // Thank You Screen
+if (currentScreen === 'thankyou') {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+      <Header />
+      <div className="max-w-3xl mx-auto px-4 py-12 pt-24">
+        <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-12 h-12 text-green-500" />
           </div>
 
-          <div className="text-center mt-8">
-            <p className="text-gray-600 mb-2">Need help interpreting your results?</p>
-            <p className="text-sm text-gray-500">
-              Our team at Effilor Consulting Services specializes in organizational culture transformation and growth mindset development.
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            Thank You, {userData.name}!
+          </h2>
+          
+          <div className="bg-purple-50 rounded-xl p-6 mb-8">
+            <p className="text-lg text-gray-700 mb-4">
+              Your Growth Mindset Assessment has been submitted successfully.
             </p>
+            <p className="text-xl font-bold mb-2" style={{ color: '#6B3D7A' }}>
+              Your detailed assessment report will be sent to:
+            </p>
+            <p className="text-xl font-bold text-gray-900 mb-4">
+              {userData.email}
+            </p>
+            <p className="text-gray-600">
+              Please allow up to 24 hours for your personalized report to arrive.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">What's Next?</h3>
+
+            
+              href="https://effilor.com/resources"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full py-4 px-6 text-lg font-bold rounded-xl border-2 transition-all hover:scale-105"
+              style={{ borderColor: '#6B3D7A', color: '#6B3D7A' }}
+            >
+              <div className="flex items-center justify-center">
+                <span>📚 Explore More Resources</span>
+                <ExternalLink className="ml-2 w-5 h-5" />
+              </div>
+            </a>
+
+            
+              href="https://effilor.com/contact"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full py-4 px-6 text-lg font-bold text-white rounded-xl transition-all hover:opacity-90"
+              style={{ backgroundColor: '#6B3D7A' }}
+            >
+              <div className="flex items-center justify-center">
+                <span>📅 Schedule a Consultation</span>
+                <ExternalLink className="ml-2 w-5 h-5" />
+              </div>
+            </a>
+
+            
+              href="https://effilor.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full py-4 px-6 text-lg font-bold rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+            >
+              <div className="flex items-center justify-center">
+                <span>🏠 Back to Effilor.com</span>
+                <ExternalLink className="ml-2 w-5 h-5" />
+              </div>
+            </a>
           </div>
         </div>
+
+        <div className="text-center mt-8">
+          <p className="text-gray-600 mb-2">Questions about your results?</p>
+          <p className="text-sm text-gray-500">
+            Contact us at resources@effilor.com
+          </p>
+        </div>
       </div>
-    );
-  }
-
-  return null;
-};
-
-export default App;
+    </div>
+  );
+}
