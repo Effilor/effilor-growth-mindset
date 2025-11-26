@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Download, ArrowRight, CheckCircle2, ExternalLink } from 'lucide-react';
-import { jsPDF } from 'jspdf';
 
 // Logo URL - will be loaded from the public folder
 const LOGO_URL = '/effilor-logo.jpg';
@@ -243,106 +242,40 @@ const App = () => {
     return { name: 'Needs Focus', color: 'bg-red-100 text-red-800' };
   };
 
- const handleEmailSubmit = async (e) => {
-  e.preventDefault();
-  
-  const assessmentData = {
-    name: userData.name,
-    email: userData.email,
-    company: userData.company,
-    answers: answers,
-    timestamp: new Date().toISOString()
-  };
+  const handleEmailSubmit = async (e) => {
+    e.preventDefault();
+    
+    const assessmentData = {
+      name: userData.name,
+      email: userData.email,
+      company: userData.company,
+      answers: answers,
+      timestamp: new Date().toISOString()
+    };
 
-  console.log('Submitting assessment data:', assessmentData);
+    console.log('Submitting assessment data:', assessmentData);
 
-  try {
-    const response = await fetch('/api/send-notification', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(assessmentData)
-    });
+    try {
+      const response = await fetch('/api/send-notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(assessmentData)
+      });
 
-    if (response.ok) {
-      console.log('Assessment data sent successfully');
-      setCurrentScreen('thankyou');
-    } else {
-      const error = await response.json();
-      console.error('Failed to send:', error);
+      if (response.ok) {
+        console.log('Assessment data sent successfully');
+        setCurrentScreen('thankyou');
+      } else {
+        const error = await response.json();
+        console.error('Failed to send:', error);
+        alert('There was an issue submitting your assessment. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting assessment:', error);
       alert('There was an issue submitting your assessment. Please try again.');
     }
-  } catch (error) {
-    console.error('Error submitting assessment:', error);
-    alert('There was an issue submitting your assessment. Please try again.');
-  }
-};
-  
-    // Add Effilor branding
-    doc.setFontSize(24);
-    doc.setTextColor(61, 61, 122); // #3D3D7A
-    doc.text('Effilor Consulting Services', 20, 20);
-    
-    doc.setFontSize(12);
-    doc.setTextColor(107, 61, 122); // #6B3D7A
-    doc.text('Growth Mindset Assessment Report', 20, 30);
-    
-    // Add user info
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Prepared for: ${userData.name}`, 20, 40);
-    if (userData.company) {
-      doc.text(`Organization: ${userData.company}`, 20, 45);
-    }
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, userData.company ? 50 : 45);
-    
-    // Overall Score
-    const yPos = userData.company ? 65 : 60;
-    doc.setFontSize(16);
-    doc.setTextColor(0);
-    doc.text('Overall Growth Mindset Score', 20, yPos);
-    
-    doc.setFontSize(36);
-    doc.setTextColor(107, 61, 122);
-    doc.text(`${results.percentageScore}%`, 20, yPos + 15);
-    
-    doc.setFontSize(14);
-    doc.setTextColor(0);
-    doc.text(`Level: ${results.level.name}`, 20, yPos + 25);
-    
-    // Pillar Scores
-    doc.setFontSize(14);
-    doc.text('Pillar Breakdown', 20, yPos + 40);
-    
-    doc.setFontSize(10);
-    let pillarY = yPos + 50;
-    Object.entries(results.pillarScores).forEach(([pillar, score]) => {
-      const percentage = Math.round((score / 16) * 100);
-      const level = getPillarLevel(score);
-      doc.text(`${pillar}: ${score}/16 (${percentage}%) - ${level.name}`, 20, pillarY);
-      pillarY += 8;
-    });
-    
-    // Key Insights
-    doc.setFontSize(14);
-    doc.text('Key Insights', 20, pillarY + 10);
-    
-    doc.setFontSize(10);
-    doc.text(`Top Strength: ${topStrength[0]}`, 20, pillarY + 20);
-    doc.text(`Score: ${topStrength[1]}/16 (${Math.round((topStrength[1] / 16) * 100)}%)`, 20, pillarY + 27);
-    
-    doc.text(`Priority Area: ${priorityArea[0]}`, 20, pillarY + 37);
-    doc.text(`Score: ${priorityArea[1]}/16 (${Math.round((priorityArea[1] / 16) * 100)}%)`, 20, pillarY + 44);
-    
-    // Add footer
-    doc.setFontSize(8);
-    doc.setTextColor(150);
-    doc.text('© 2024 Effilor Consulting Services. All rights reserved.', 20, 280);
-    doc.text('For more information, visit effilor.com', 20, 285);
-    
-    // Save the PDF
-    doc.save(`Growth-Mindset-Assessment-${userData.name.replace(/\s+/g, '-')}.pdf`);
   };
 
   const results = currentScreen === 'results' || currentScreen === 'email' || currentScreen === 'thankyou' ? calculateResults() : null;
@@ -817,7 +750,7 @@ const App = () => {
   }
 
   // Thank You Screen
-// Thank You Screen
+  // Thank You Screen
   if (currentScreen === 'thankyou') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
@@ -900,5 +833,8 @@ const App = () => {
       </div>
     );
   }
+
+  return null;
+};
 
 export default App;
