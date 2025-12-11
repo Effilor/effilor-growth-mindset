@@ -797,7 +797,7 @@ const App = () => {
               </a>
 
               <a
-                href="https://effilor.com/contact"
+                href="https://calendar.app.google/zCBe4tkGuv5TeyhE7"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full py-4 px-6 text-lg font-bold text-white rounded-xl transition-all hover:opacity-90"
