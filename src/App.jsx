@@ -781,7 +781,7 @@ const App = () => {
                 style={{ backgroundColor: '#6B3D7A' }}
               >
                 <Download className="mr-2" />
-                Download Full Report
+                Request Full Report
               </button>
             </form>
 
@@ -809,7 +809,7 @@ const App = () => {
               Thank You, {userData.name}!
             </h2>
             <p className="text-xl text-gray-600 mb-8">
-              Your request for the report has been received.
+              Your request has been received.
             </p>
 
             <div className="bg-purple-50 rounded-xl p-6 mb-8">
