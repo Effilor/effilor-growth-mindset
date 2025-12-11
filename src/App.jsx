@@ -625,7 +625,7 @@ const App = () => {
           {/* CTA to Email Gate */}
           <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl shadow-xl p-8 text-center text-white mb-8">
             <h3 className="text-3xl font-bold mb-4">Want to Save and Share These Results?</h3>
-            <p className="text-xl mb-6">Get your complete analysis as a downloadable PDF report</p>
+            <p className="text-xl mb-6">Get your complete analysis as a downloadable report</p>
             <button
               onClick={() => setCurrentScreen('email')}
               className="bg-white text-purple-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors inline-flex items-center"
@@ -685,7 +685,7 @@ const App = () => {
               Get Your Complete Report
             </h2>
             <p className="text-gray-600 text-center mb-8">
-              Enter your details below and we'll send you a comprehensive PDF report with all your results and insights.
+              Enter your details below and we'll send you a comprehensive report with all your results and insights.
             </p>
 
             <form onSubmit={handleEmailSubmit} className="space-y-6">
@@ -826,7 +826,7 @@ const App = () => {
           <div className="text-center mt-8">
             <p className="text-gray-600 mb-2">Questions about your results?</p>
             <p className="text-sm text-gray-500">
-              Contact us at resources@effilor.com
+              Contact Raj at raj.dharmaraj@effilor.com
             </p>
           </div>
         </div>
