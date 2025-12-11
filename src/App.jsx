@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Download, ArrowRight, CheckCircle2, ExternalLink } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 
 // Logo URL - will be loaded from the public folder
 const LOGO_URL = '/effilor-logo.jpg';
@@ -9,7 +10,7 @@ const App = () => {
   const [currentScreen, setCurrentScreen] = useState('welcome');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [userData, setUserData] = useState({ name: '', email: '', company: '' });
+  const [userData, setUserData] = useState({ name: '', email: '', company: '', designation: '', phone: '' });
 
   const questions = [
     // Pillar 1: Beliefs About Potential
@@ -242,40 +243,84 @@ const App = () => {
     return { name: 'Needs Focus', color: 'bg-red-100 text-red-800' };
   };
 
-  const handleEmailSubmit = async (e) => {
+  const handleEmailSubmit = (e) => {
     e.preventDefault();
+    console.log('Lead captured:', userData, answers);
+    setCurrentScreen('thankyou');
+    // Trigger PDF download
+    setTimeout(() => generatePDF(), 500);
+  };
+
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    const results = calculateResults();
+    const topStrength = getTopStrength();
+    const priorityArea = getPriorityArea();
     
-    const assessmentData = {
-      name: userData.name,
-      email: userData.email,
-      company: userData.company,
-      answers: answers,
-      timestamp: new Date().toISOString()
-    };
-
-    console.log('Submitting assessment data:', assessmentData);
-
-    try {
-      const response = await fetch('/api/send-notification', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(assessmentData)
-      });
-
-      if (response.ok) {
-        console.log('Assessment data sent successfully');
-        setCurrentScreen('thankyou');
-      } else {
-        const error = await response.json();
-        console.error('Failed to send:', error);
-        alert('There was an issue submitting your assessment. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error submitting assessment:', error);
-      alert('There was an issue submitting your assessment. Please try again.');
+    // Add Effilor branding
+    doc.setFontSize(24);
+    doc.setTextColor(61, 61, 122); // #3D3D7A
+    doc.text('Effilor Consulting Services', 20, 20);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(107, 61, 122); // #6B3D7A
+    doc.text('Growth Mindset Assessment Report', 20, 30);
+    
+    // Add user info
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Prepared for: ${userData.name}`, 20, 40);
+    if (userData.company) {
+      doc.text(`Organization: ${userData.company}`, 20, 45);
     }
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, userData.company ? 50 : 45);
+    
+    // Overall Score
+    const yPos = userData.company ? 65 : 60;
+    doc.setFontSize(16);
+    doc.setTextColor(0);
+    doc.text('Overall Growth Mindset Score', 20, yPos);
+    
+    doc.setFontSize(36);
+    doc.setTextColor(107, 61, 122);
+    doc.text(`${results.percentageScore}%`, 20, yPos + 15);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text(`Level: ${results.level.name}`, 20, yPos + 25);
+    
+    // Pillar Scores
+    doc.setFontSize(14);
+    doc.text('Pillar Breakdown', 20, yPos + 40);
+    
+    doc.setFontSize(10);
+    let pillarY = yPos + 50;
+    Object.entries(results.pillarScores).forEach(([pillar, score]) => {
+      const percentage = Math.round((score / 16) * 100);
+      const level = getPillarLevel(score);
+      doc.text(`${pillar}: ${score}/16 (${percentage}%) - ${level.name}`, 20, pillarY);
+      pillarY += 8;
+    });
+    
+    // Key Insights
+    doc.setFontSize(14);
+    doc.text('Key Insights', 20, pillarY + 10);
+    
+    doc.setFontSize(10);
+    doc.text(`Top Strength: ${topStrength[0]}`, 20, pillarY + 20);
+    doc.text(`Score: ${topStrength[1]}/16 (${Math.round((topStrength[1] / 16) * 100)}%)`, 20, pillarY + 27);
+    
+    doc.text(`Priority Area: ${priorityArea[0]}`, 20, pillarY + 37);
+    doc.text(`Score: ${priorityArea[1]}/16 (${Math.round((priorityArea[1] / 16) * 100)}%)`, 20, pillarY + 44);
+    
+    // Add footer
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text('© 2024 Effilor Consulting Services. All rights reserved.', 20, 280);
+    doc.text('For more information, visit effilor.com', 20, 285);
+    
+    // Save the PDF
+    doc.save(`Growth-Mindset-Assessment-${userData.name.replace(/\s+/g, '-')}.pdf`);
   };
 
   const results = currentScreen === 'results' || currentScreen === 'email' || currentScreen === 'thankyou' ? calculateResults() : null;
@@ -444,9 +489,6 @@ const App = () => {
               <span className="text-sm font-medium text-gray-600">
                 Question {currentQuestion + 1} of {questions.length}
               </span>
-              <span className="text-sm font-medium" style={{ color: '#6B3D7A' }}>
-                {question.pillar}
-              </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
@@ -474,16 +516,7 @@ const App = () => {
                         : 'border-gray-200 hover:border-purple-400 hover:bg-purple-50'
                     }`}
                   >
-                    <div className="flex items-start">
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mr-4 font-bold ${
-                        isSelected ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {String.fromCharCode(65 + index)}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-gray-800">{option.label}</p>
-                      </div>
-                    </div>
+                    <p className="text-gray-800">{option.label}</p>
                   </button>
                 );
               })}
@@ -625,7 +658,7 @@ const App = () => {
           {/* CTA to Email Gate */}
           <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl shadow-xl p-8 text-center text-white mb-8">
             <h3 className="text-3xl font-bold mb-4">Want to Save and Share These Results?</h3>
-            <p className="text-xl mb-6">Get your complete analysis as a downloadable report</p>
+            <p className="text-xl mb-6">Get your complete analysis as a downloadable PDF report</p>
             <button
               onClick={() => setCurrentScreen('email')}
               className="bg-white text-purple-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors inline-flex items-center"
@@ -636,23 +669,7 @@ const App = () => {
           </div>
 
           {/* Additional Engagement Hooks */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-purple-200">
-              <h3 className="text-xl font-bold text-gray-900 mb-3">🎯 Want a Deeper Dive?</h3>
-              <p className="text-gray-700 mb-4">
-                Get a comprehensive organizational assessment with individual evaluations across your leadership team.
-              </p>
-              <a
-                href="https://effilor.com/contact"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block px-6 py-3 rounded-xl font-bold transition-all"
-                style={{ backgroundColor: '#6B3D7A', color: 'white' }}
-              >
-                Request Team Assessment
-              </a>
-            </div>
-
+          <div className="grid md:grid-cols-1 gap-6 max-w-xl mx-auto">
             <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-blue-200">
               <h3 className="text-xl font-bold text-gray-900 mb-3">💡 Explore More Resources</h3>
               <p className="text-gray-700 mb-4">
@@ -685,7 +702,7 @@ const App = () => {
               Get Your Complete Report
             </h2>
             <p className="text-gray-600 text-center mb-8">
-              Enter your details below and we'll send you a comprehensive report with all your results and insights.
+              Enter your details below and we'll send you a comprehensive PDF report with all your results and insights.
             </p>
 
             <form onSubmit={handleEmailSubmit} className="space-y-6">
@@ -719,14 +736,42 @@ const App = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Company
+                  Organization Name *
                 </label>
                 <input
                   type="text"
+                  required
                   value={userData.company}
                   onChange={(e) => setUserData({ ...userData, company: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none"
                   placeholder="Your organization name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Designation *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={userData.designation}
+                  onChange={(e) => setUserData({ ...userData, designation: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none"
+                  placeholder="Your job title"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={userData.phone}
+                  onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none"
+                  placeholder="Optional"
                 />
               </div>
 
@@ -750,7 +795,6 @@ const App = () => {
   }
 
   // Thank You Screen
-  // Thank You Screen
   if (currentScreen === 'thankyou') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
@@ -764,19 +808,16 @@ const App = () => {
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
               Thank You, {userData.name}!
             </h2>
-            
+            <p className="text-xl text-gray-600 mb-8">
+              Your request for the report has been received.
+            </p>
+
             <div className="bg-purple-50 rounded-xl p-6 mb-8">
-              <p className="text-lg text-gray-700 mb-4">
-                Your Growth Mindset Assessment has been submitted successfully.
+              <p className="text-gray-700 mb-4">
+                It will be sent to <strong>{userData.email}</strong>
               </p>
-              <p className="text-xl font-bold mb-2" style={{ color: '#6B3D7A' }}>
-                Your detailed assessment report will be sent to:
-              </p>
-              <p className="text-xl font-bold text-gray-900 mb-4">
-                {userData.email}
-              </p>
-              <p className="text-gray-600">
-                Please allow up to 24 hours for your personalized report to arrive.
+              <p className="text-sm text-gray-600">
+                Allow up to 24 hours for your personalised report to arrive.
               </p>
             </div>
 
@@ -824,9 +865,9 @@ const App = () => {
           </div>
 
           <div className="text-center mt-8">
-            <p className="text-gray-600 mb-2">Questions about your results?</p>
+            <p className="text-gray-600 mb-2">Need help interpreting your results?</p>
             <p className="text-sm text-gray-500">
-              Contact Raj at raj.dharmaraj@effilor.com
+              At Effilor Consulting Services, we specialise in Growth & Strategy, Organisational Culture transformation and Leadership Development.
             </p>
           </div>
         </div>
