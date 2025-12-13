@@ -702,7 +702,7 @@ const App = () => {
               Get Your Complete Report
             </h2>
             <p className="text-gray-600 text-center mb-8">
-              Enter your details below and we'll send you a comprehensive PDF report with all your results and insights.
+              Enter your details below and we'll send you a comprehensive report with all your results and insights.
             </p>
 
             <form onSubmit={handleEmailSubmit} className="space-y-6">
@@ -817,7 +817,7 @@ const App = () => {
                 It will be sent to <strong>{userData.email}</strong>
               </p>
               <p className="text-sm text-gray-600">
-                Allow up to 24 hours for your personalised report to arrive.
+                Please allow up to 2 business days for your personalised report to arrive.
               </p>
             </div>
 
